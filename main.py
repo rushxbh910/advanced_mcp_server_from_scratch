@@ -337,9 +337,29 @@ def organize_my_notes() -> str:
     
     valid_notes = [n for n in notes if n.embedding]
     
+    # 🧠 Dynamic Naming Logic extracting top words
+    from collections import Counter
+    import re
+    stop_words = {"the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "with", "by", "about", "as", "is", "are", "was", "were", "be", "been", "this", "that", "it", "of", "from", "i", "my", "me", "you", "your", "they", "them", "he", "she", "we", "not", "no", "if", "so", "how", "what", "where", "why", "can", "will", "just", "have", "has", "do", "did"}
+    
+    cluster_names = {}
+    for i in range(k):
+        cluster_indices = np.where(kmeans.labels_ == i)[0]
+        words = []
+        for idx in cluster_indices:
+            text = valid_notes[idx].content.lower()
+            tokens = re.findall(r'\b[a-z]{3,}\b', text)
+            words.extend([w for w in tokens if w not in stop_words])
+            
+        if words:
+            most_common = Counter(words).most_common(2)
+            cluster_names[i] = " ".join([w[0].capitalize() for w in most_common])
+        else:
+            cluster_names[i] = f"Topic {i}"
+    
     with SessionLocal() as db:
         for idx, cluster_label in enumerate(kmeans.labels_):
-            cluster_name = f"Cluster_{cluster_label}"
+            cluster_name = cluster_names[cluster_label]
             n_in_db = db.query(Note).filter(Note.id == valid_notes[idx].id).first()
             if n_in_db:
                 n_in_db.category = cluster_name
