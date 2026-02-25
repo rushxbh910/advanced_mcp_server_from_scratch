@@ -95,6 +95,7 @@ def get_my_notes() -> str:
 @mcp.tool()
 def add_note(
     content: str, 
+    account_id: str = None,
     file_path: str = None, 
     line_number: int = None, 
     code_snippet: str = None

@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from database import SessionLocal, Note
 from starlette.middleware.cors import CORSMiddleware
 
@@ -12,9 +12,10 @@ app.add_middleware(
 )
 
 @app.get("/api/notes")
-def get_notes():
+def get_notes(request: Request):
+    user_id = request.headers.get("X-User-ID", "anonymous")
     with SessionLocal() as db:
-        notes = db.query(Note).all()
+        notes = db.query(Note).filter(Note.user_id == user_id).all()
         return [
             {
                 "id": n.id,

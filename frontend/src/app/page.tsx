@@ -20,13 +20,24 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedNote, setExpandedNote] = useState<number | null>(null);
 
-  useEffect(() => {
-    fetchNotes();
-  }, []);
+  // Fake auth state
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [loginInput, setLoginInput] = useState("");
 
-  const fetchNotes = async () => {
+  useEffect(() => {
+    if (currentUser) {
+      fetchNotes(currentUser);
+    }
+  }, [currentUser]);
+
+  const fetchNotes = async (user_id: string) => {
+    setLoading(true);
     try {
-      const res = await fetch("http://127.0.0.1:8001/api/notes");
+      const res = await fetch(`http://127.0.0.1:8001/api/notes`, {
+        headers: {
+          "X-User-ID": user_id
+        }
+      });
       const data = await res.json();
       data.sort((a: Note, b: Note) => b.id - a.id);
       setNotes(data);
@@ -51,6 +62,41 @@ export default function Home() {
     if (filter === "Tasks") return n.is_task === 1;
     return n.category === filter;
   });
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-[#0f172a] flex items-center justify-center font-sans">
+        <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-600/20 blur-[120px]" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-fuchsia-600/20 blur-[120px]" />
+        </div>
+        <div className="w-full max-w-sm p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-md shadow-2xl">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-fuchsia-400 bg-clip-text text-transparent mb-6 text-center">
+            Login
+          </h2>
+          <form
+            onSubmit={(e) => { e.preventDefault(); if (loginInput.trim()) setCurrentUser(loginInput.trim()); }}
+            className="flex flex-col gap-4"
+          >
+            <input
+              type="text"
+              placeholder="Enter Workspace ID"
+              value={loginInput}
+              onChange={(e) => setLoginInput(e.target.value)}
+              className="w-full bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-slate-500"
+              required
+            />
+            <button
+              type="submit"
+              className="w-full py-3 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-bold transition-all shadow-[0_0_15px_rgba(99,102,241,0.5)]"
+            >
+              Access Workspace
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans selection:bg-indigo-500/30">
@@ -81,6 +127,18 @@ export default function Home() {
               <span className="block text-sm text-slate-400 font-medium mb-1">Open Tasks</span>
               <span className="text-2xl font-bold text-fuchsia-400">{notes.filter(n => n.is_task).length}</span>
             </div>
+            <div className="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex flex-col items-end">
+              <span className="block text-sm text-slate-400 font-medium mb-1">Authenticated As</span>
+              <div className="flex items-center gap-3">
+                <span className="text-fuchsia-400 font-bold">{currentUser}</span>
+                <button
+                  onClick={() => { setCurrentUser(null); setLoginInput(""); setNotes([]); }}
+                  className="text-xs px-2 py-1 bg-white/10 hover:bg-red-500/80 rounded-md transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
           </div>
         </header>
 
@@ -107,8 +165,8 @@ export default function Home() {
                 key={cat as string}
                 onClick={() => setFilter(cat as string)}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${filter === cat
-                    ? "bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.5)]"
-                    : "bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5"
+                  ? "bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.5)]"
+                  : "bg-white/5 text-slate-300 hover:bg-white/10 border border-white/5"
                   }`}
               >
                 {cat?.toString().replace("_", " ")}
