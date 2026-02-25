@@ -5,8 +5,14 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "chromadb>=1.5.1",
     "dotenv>=0.9.9",
     "fastmcp>=3.0.1",
+    "httpx>=0.28.1",
+    "numpy>=2.4.2",
+    "scikit-learn>=1.8.0",
+    "sentence-transformers>=5.2.3",
     "sqlalchemy>=2.0.46",
     "stytch>=14.2.0",
 ]
