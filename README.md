@@ -52,6 +52,29 @@ You talk to your AI assistant naturally. It calls the right tool behind the scen
 
 ---
 
+## Use the hosted instance
+
+Don't want to deploy your own? Connect directly to the live server:
+
+1. Add this to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "notes": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp-proj-production.up.railway.app/mcp"]
+    }
+  }
+}
+```
+
+2. Restart Claude Desktop — that's it. No signup, no deployment.
+
+> **Note:** The hosted instance requires an invite to get an isolated workspace. Without auth, all users share the same notes pool. To request access, open an issue on this repo.
+
+---
+
 ## Deploy your own instance
 
 See [DEPLOY.md](DEPLOY.md) for the full guide. Short version:
