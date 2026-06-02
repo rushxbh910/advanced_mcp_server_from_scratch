@@ -1,0 +1,12 @@
+.venv
+__pycache__
+*.pyc
+*.pyo
+.env
+.git
+.gitignore
+*.db
+chroma_db/
+frontend/
+notes.md
+README.md
