@@ -2,14 +2,16 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install uv
 RUN pip install --no-cache-dir uv
 
-# Install deps from lock file before copying app code (layer cache)
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev
 
-# Copy application source
+# Install CPU-only PyTorch first, then sync everything else without overwriting it.
+# This prevents sentence-transformers from pulling in 3GB of CUDA GPU libraries.
+RUN uv venv && \
+    uv pip install torch --index-url https://download.pytorch.org/whl/cpu && \
+    uv sync --frozen --no-dev --no-install-package torch
+
 COPY . .
 
 # Pre-download the embedding model at build time to eliminate cold-start latency
